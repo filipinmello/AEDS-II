@@ -1,12 +1,8 @@
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Date;
 
-public class TP02Q01 {
+public class TP02Q03 {
         static class Personagem implements Cloneable{
             private String id;
             private String name;
@@ -20,13 +16,12 @@ public class TP02Q01 {
             private String actorName;
             private boolean alive;
             private String alternate_actors;
-            private Date dateOfBirth;
+            private String dateOfBirth;
             private int yearOfBirth;
             private String eyeColour;
             private String gender;
             private String hairColour;
             private boolean wizard;
-            private DateFormat dateFormat  = new SimpleDateFormat("dd-MM-yyyy");
 
             public Personagem(){}
 
@@ -69,11 +64,7 @@ public class TP02Q01 {
                 
                 this.alternate_actors = alternate_actors;
 
-                try {
-                    this.dateOfBirth = dateFormat.parse(dateOfBirth);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                this.dateOfBirth = dateOfBirth;
                 
                 this.yearOfBirth = Integer.parseInt(yearOfBirth);
                 this.eyeColour = eyeColour;
@@ -116,7 +107,7 @@ public class TP02Q01 {
                 MyIO.print(" ## ");
                 MyIO.print(alive);
                 MyIO.print(" ## ");
-                System.out.print(dateFormat.format(dateOfBirth));
+                MyIO.print(dateOfBirth);
                 MyIO.print(" ## ");
                 MyIO.print(yearOfBirth);
                 MyIO.print(" ## ");
@@ -233,11 +224,11 @@ public class TP02Q01 {
                 this.alternate_actors = alternate_actors;
             }
 
-            public Date getDateOfBirth() {
+            public String getDateOfBirth() {
                 return dateOfBirth;
             }
 
-            public void setDateOfBirth(Date dateOfBirth) {
+            public void setDateOfBirth(String dateOfBirth) {
                 this.dateOfBirth = dateOfBirth;
             }
 
@@ -298,15 +289,33 @@ public class TP02Q01 {
         return values;
     }
 
+    public static boolean nameSearch(String targetName, ArrayList<String> input, Integer[] comparisons){
+        boolean resp = false;
+
+        for (int i=0; i<input.size();i++){
+            if(input.get(i).equals(targetName)){
+                resp = true;
+                comparisons[0]++;
+                break;
+            }
+            comparisons[0]++;
+        }
+
+        return resp;
+    }
+
     public static void main(String[] args) {
+        long startTime = System.nanoTime();
         List<Personagem> lista = new ArrayList<Personagem>();
         String fileName = "/tmp/characters.csv";
         String fileLine = "";
+        ArrayList<String> input = new ArrayList<>();
         String line;
         Scanner entrada = new Scanner(System.in);
+        String targetName = "";
         
         Arq.openRead(fileName);
-
+        
         for(int i=0; i<405; i++){
             fileLine = Arq.readLine();
             if(i>0){
@@ -315,20 +324,40 @@ public class TP02Q01 {
                 lista.add(e);
             }
         }
+        Arq.close();
         
         do {
             line = entrada.nextLine();
 
             if (!line.equals("FIM")) {
-                for(int i=0; i<lista.size(); i++){
-                    Personagem tmp = lista.get(i);
+                for(int j=0; j<lista.size(); j++){
+                    Personagem tmp = lista.get(j);
                     if(tmp.getId().equals(line)){
-                        tmp.imprimir();
+                        input.add(tmp.getName());
+                        break;
                     }
                 }
             }
         } while (!line.equals("FIM"));
 
+        Integer[] comparisons = {0};
+
+        do {
+            targetName = entrada.nextLine();
+
+            if (!targetName.equals("FIM")) {
+                if(nameSearch(targetName, input, comparisons)){MyIO.println("SIM");}
+                else{MyIO.println("NAO");}
+            }
+        } while (!targetName.equals("FIM"));
+        
         entrada.close();
+        
+        long endTime = System.nanoTime();
+        long executionTime = (endTime - startTime) / 1000000;
+
+        Arq.openWrite("log");
+        Arq.println("827761\t" + executionTime + "ms\t" + comparisons[0]);
+        Arq.close();
     }
 }

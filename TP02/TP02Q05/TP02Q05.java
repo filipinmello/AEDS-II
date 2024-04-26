@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Date;
 
-public class TP02Q01 {
+public class TP02Q05 {
         static class Personagem implements Cloneable{
             private String id;
             private String name;
@@ -298,10 +298,37 @@ public class TP02Q01 {
         return values;
     }
 
+    public static void sort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade) {
+		for (int i = 0; i < (input.size() - 1); i++) {
+			int menor = i;
+			for (int j = (i + 1); j < input.size(); j++){
+				if (input.get(j).getName().compareTo(input.get(menor).getName()) < 0){
+					menor = j;
+                    comparisons[0]++;
+				}
+                comparisons[0]++;
+			}
+			if (menor != i) {
+                swap(input, menor, i);
+                swapsMade[0]+=3;
+            }
+		}
+	}
+
+    public static void swap(ArrayList<Personagem> input, int i, int j) {
+        Personagem temp1 = input.get(i);
+        Personagem temp2 = input.get(j);
+    
+        input.set(i, temp2);
+        input.set(j, temp1);
+    }
+
     public static void main(String[] args) {
+        long startTime = System.nanoTime();
         List<Personagem> lista = new ArrayList<Personagem>();
         String fileName = "/tmp/characters.csv";
         String fileLine = "";
+        ArrayList<Personagem> input = new ArrayList<>();
         String line;
         Scanner entrada = new Scanner(System.in);
         
@@ -323,12 +350,28 @@ public class TP02Q01 {
                 for(int i=0; i<lista.size(); i++){
                     Personagem tmp = lista.get(i);
                     if(tmp.getId().equals(line)){
-                        tmp.imprimir();
+                        input.add(tmp);
+                        break;
                     }
                 }
             }
         } while (!line.equals("FIM"));
 
+        Integer[] comparisons = {0};
+        Integer[] swapsMade = {0};
+
+        sort(input, comparisons, swapsMade);
+
+        for (Personagem personagem : input) {
+            personagem.imprimir();
+        }
+
         entrada.close();
+        long endTime = System.nanoTime();
+        long executionTime = (endTime - startTime) / 1000000;
+
+        Arq.openWrite("log");
+        Arq.println("827761\t" + comparisons[0] + "\t" + swapsMade[0] + "\t" + executionTime + "ms");
+        Arq.close();
     }
 }

@@ -44,26 +44,32 @@ char* alternateActors, char* dateOfBirth, char* yearOfBirth, char* eyeColour, ch
     strcpy(p.id, id);
     strcpy(p.name, name);
 
+    //char*[] alternateNames
     strcpy(p.alternateNames, alternateNames);
 
     strcpy(p.house, house);
     strcpy(p.ancestry, ancestry);
     strcpy(p.species, species);
     strcpy(p.patronus, patronus);
-    p.hogwartsStaff = (hogwartsStaff[0] == 'V');
-    p.hogwartsStudent = (hogwartsStudent[0] == 'V');
+    //bool hogwartsStaff
+    p.hogwartsStaff = (strcmp(hogwartsStaff, "VERDADEIRO") == 0);
+    //bool hogwartsStudent
+    p.hogwartsStudent = (strcmp(hogwartsStudent, "VERDADEIRO") == 0);
 
     strcpy(p.actorName, actorName);
-    p.alive = (alive[0] == 'V');
+    //bool alive
+    p.alive = (strcmp(alive, "VERDADEIRO") == 0);
 
     strcpy(p.alternateActors, alternateActors);
     strcpy(p.dateOfBirth, dateOfBirth);
+    //int yearOfBirth
     p.yearOfBirth = atoi(yearOfBirth);
 
     strcpy(p.eyeColour, eyeColour);
     strcpy(p.gender, gender);
     strcpy(p.hairColour, hairColour);
-    p.wizard = (wizard[0] == 'V');
+    //bool wizard
+    p.wizard = (strcmp(wizard, "VERDADEIRO") == 0);
     
     return p;
 }
@@ -166,8 +172,7 @@ void imprimir(Personagem e){
     else printf("false");
     printf(" ## ");
 
-    if(!strcmp(e.dateOfBirth, "23-6-1980")) printf("23-06-1980");
-    else printf("%s", e.dateOfBirth);
+    printf("%s", e.dateOfBirth);
     printf(" ## ");
     printf("%d", e.yearOfBirth);
     printf(" ## ");
@@ -184,12 +189,12 @@ void imprimir(Personagem e){
 }
 
 bool compareStrings(char* str1, char* str2){
-    int tam1 = strlen(str1),tam2 = strlen(str2);
-    //if(tam1 != tam2){return false;}
-    for(int i = 0;i<tam1;i++){
-        if((int)str1[i] != (int)str2[i]){
+    while(*str1 != '\0' && *str2 != '\0'){
+        if(*str1 != *str2){
             return false;
         }
+        str1++;
+        str2++;
     }
     return true;
 }
@@ -218,17 +223,34 @@ int main(){
     }
     fclose(file);
     
-    char input[100];
-    scanf("%s", input);
+    char input[200][200];
+    char inputLine[200];
+    int index = 0;
 
-    while(strcmp(input, "FIM") != 0){
-        for(int i = 1;i<405;i++){
-            //printf("teste %d\n", i);
-            if(compareStrings(personagens[i].id,input) == 1){
-                imprimir(personagens[i]);
-            }
+    do {
+        //__fpurge(stdin);
+        fgets(inputLine, sizeof(inputLine), stdin);
+        if (inputLine[strlen(inputLine) - 1] == '\n')
+            inputLine[strlen(inputLine) - 1] = '\0';
+        else {
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
         }
-        scanf("%s", input);
+
+        if (strcmp(inputLine, "FIM") != 0) {
+            strcpy(input[index], inputLine);
+            index++;
+        }
+    } while (strcmp(inputLine, "FIM") != 0);
+
+    for (int i=0; i<index; i++) {
+            for(int j=1; j<405; j++){
+                char id[200];
+                strcpy(id, personagens[j].id);
+                if(id != NULL && compareStrings(personagens[j].id, input[i]) == 1){
+                    imprimir(personagens[j]);
+                }
+            }
     }
 
     return 0;

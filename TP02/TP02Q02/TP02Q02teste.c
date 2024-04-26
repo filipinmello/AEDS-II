@@ -44,26 +44,32 @@ char* alternateActors, char* dateOfBirth, char* yearOfBirth, char* eyeColour, ch
     strcpy(p.id, id);
     strcpy(p.name, name);
 
+    //char*[] alternateNames
     strcpy(p.alternateNames, alternateNames);
 
     strcpy(p.house, house);
     strcpy(p.ancestry, ancestry);
     strcpy(p.species, species);
     strcpy(p.patronus, patronus);
-    p.hogwartsStaff = (hogwartsStaff[0] == 'V');
-    p.hogwartsStudent = (hogwartsStudent[0] == 'V');
+    //bool hogwartsStaff
+    p.hogwartsStaff = (strcmp(hogwartsStaff, "VERDADEIRO") == 0);
+    //bool hogwartsStudent
+    p.hogwartsStudent = (strcmp(hogwartsStudent, "VERDADEIRO") == 0);
 
     strcpy(p.actorName, actorName);
-    p.alive = (alive[0] == 'V');
+    //bool alive
+    p.alive = (strcmp(alive, "VERDADEIRO") == 0);
 
     strcpy(p.alternateActors, alternateActors);
     strcpy(p.dateOfBirth, dateOfBirth);
+    //int yearOfBirth
     p.yearOfBirth = atoi(yearOfBirth);
 
     strcpy(p.eyeColour, eyeColour);
     strcpy(p.gender, gender);
     strcpy(p.hairColour, hairColour);
-    p.wizard = (wizard[0] == 'V');
+    //bool wizard
+    p.wizard = (strcmp(wizard, "VERDADEIRO") == 0);
     
     return p;
 }
@@ -166,8 +172,7 @@ void imprimir(Personagem e){
     else printf("false");
     printf(" ## ");
 
-    if(!strcmp(e.dateOfBirth, "23-6-1980")) printf("23-06-1980");
-    else printf("%s", e.dateOfBirth);
+    printf("%s", e.dateOfBirth);
     printf(" ## ");
     printf("%d", e.yearOfBirth);
     printf(" ## ");
@@ -184,19 +189,19 @@ void imprimir(Personagem e){
 }
 
 bool compareStrings(char* str1, char* str2){
-    int tam1 = strlen(str1),tam2 = strlen(str2);
-    //if(tam1 != tam2){return false;}
-    for(int i = 0;i<tam1;i++){
-        if((int)str1[i] != (int)str2[i]){
+    while(*str1 != '\0' && *str2 != '\0'){
+        if(*str1 != *str2){
             return false;
         }
+        str1++;
+        str2++;
     }
     return true;
 }
 
 int main(){
     char *tokens[MAX_TOKENS];
-    const char *fileName = "/tmp/characters.csv";
+    const char *fileName = "characters.csv";
     Personagem *personagens;
     personagens = (Personagem *)malloc(405 * sizeof(Personagem));
 
@@ -208,6 +213,7 @@ int main(){
     char line[1024];
     int i = 0;
     while (fscanf(file, "%[^\n]%*c", line) != EOF) {
+        line[strcspn(line, "\n")] = '\0';
         if(i>0){
             parseString(line, tokens);
             personagens[i] = createPersonagem(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4], tokens[5], tokens[6], tokens[7], tokens[8], tokens[9], tokens[10], 
@@ -217,18 +223,31 @@ int main(){
         i++;
     }
     fclose(file);
-    
-    char input[100];
-    scanf("%s", input);
 
-    while(strcmp(input, "FIM") != 0){
-        for(int i = 1;i<405;i++){
-            //printf("teste %d\n", i);
-            if(compareStrings(personagens[i].id,input) == 1){
-                imprimir(personagens[i]);
+    char inputLine[200];
+
+    do {
+        scanf("%[^\n]%*c", inputLine);
+        inputLine[strcspn(inputLine, "\n")] = '\0';
+    } while (strcmp(inputLine, "FIM") != 0);
+
+    strcpy(inputLine, "");
+
+    for(int j=0; j<4; j++){
+        if(j==0) {strcpy(inputLine, "9e3f7ce4-b9a7-4244-b709-dae5c1f1d4a8");}
+        if(j==1) {strcpy(inputLine, "4c7e6819-a91a-45b2-a454-f931e4a7cce3");}
+        if(j==2) {strcpy(inputLine, "ca3827f0-375a-4891-aaa5-f5e8a5bad225");}
+        if(j==3) {strcpy(inputLine, "af95bd8a-dfae-45bb-bc69-533860d34129");}
+        for(int i = 1; i < 405; i++){
+            printf("Personagem comparado: %s\n", personagens[i]);
+            printf("Input comparado: %s\n", inputLine);
+            printf("Resultado: %d\n", compareStrings(personagens[i].id, inputLine));
+            printf("-------------------------\n");
+            if((compareStrings(personagens[i].id, inputLine)) == 1){
+                    imprimir(personagens[i]);
+                    i = 405;
             }
         }
-        scanf("%s", input);
     }
 
     return 0;
