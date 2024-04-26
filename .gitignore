@@ -1,5 +1,10 @@
 *.class
 *.exe
 *.o
-/deleteme
-D:\Estudos\2º Semestre\Algoritimos e Estruturas de Dados II\AEDS-II\TP02\fonte\deleteme
+.csv
+Arq.java
+MyIO.java
+Geracao.java
+Selecao.java
+log.txt
+pub.in
