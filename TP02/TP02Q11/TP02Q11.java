@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Date;
 
-public class TP02Q05 {
+public class TP02Q11 {
         static class Personagem implements Cloneable{
             private String id;
             private String name;
@@ -129,7 +129,7 @@ public class TP02Q05 {
             }
 
             @Override
-            public Object clonar() throws CloneNotSupportedException {
+            public Object clone() throws CloneNotSupportedException {
                 Personagem clonedPersonagem = (Personagem) super.clone();
         
                 clonedPersonagem.alternateNames = new ArrayList<>(this.alternateNames);
@@ -297,8 +297,16 @@ public class TP02Q05 {
         }
         return values;
     }
+    
+    public static void swap(ArrayList<Personagem> input, int i, int j) {
+        Personagem temp1 = input.get(i);
+        Personagem temp2 = input.get(j);
+    
+        input.set(i, temp2);
+        input.set(j, temp1);
+    }
 
-    public static void sort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade) {
+    public static void nameSort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade) {
 		for (int i = 0; i < (input.size() - 1); i++) {
 			int menor = i;
 			for (int j = (i + 1); j < input.size(); j++){
@@ -315,14 +323,59 @@ public class TP02Q05 {
 		}
 	}
 
-    public static void swap(ArrayList<Personagem> input, int i, int j) {
-        Personagem temp1 = input.get(i);
-        Personagem temp2 = input.get(j);
-    
-        input.set(i, temp2);
-        input.set(j, temp1);
+    public static int compareYearOfBirth(Personagem p1, Personagem p2){
+        int comparacao = Integer.compare(p1.getYearOfBirth(), p2.getYearOfBirth());
+		if(comparacao == 0){
+			return p1.getName().compareTo(p2.getName());
+		}
+		return comparacao;
     }
 
+    public static int getMaior(ArrayList<Personagem> input) {
+        int maior = input.get(0).getYearOfBirth();
+ 
+         for (int i = 0; i < input.size(); i++) {
+          if(maior < input.get(i).getYearOfBirth()){
+             maior = input.get(i).getYearOfBirth();
+          }
+         }
+        return maior;	
+     }
+
+    public static void sort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade){
+        int[] count = new int[getMaior(input) + 1];
+        ArrayList<Personagem> ordenado = new ArrayList<>(input.size());
+    
+        // Initialize ordenado ArrayList
+        for (int i = 0; i < input.size(); i++) {
+            ordenado.add(null);
+        }
+    
+        // Count occurrences of each year of birth
+        for (Personagem p : input) {
+            count[p.getYearOfBirth()]++;
+        }
+    
+        // Calculate cumulative counts
+        for (int i = 1; i < count.length; i++) {
+            count[i] += count[i - 1];
+        }
+    
+        // Populate the sorted array
+        for (int i = input.size() - 1; i >= 0; i--) {
+            int index = count[input.get(i).getYearOfBirth()] - 1;
+            comparisons[0]++;
+            ordenado.set(index, input.get(i));
+            count[input.get(i).getYearOfBirth()]--;
+        }
+    
+        // Copy sorted elements back to input
+        for (int i = 0; i < input.size(); i++) {
+            input.set(i, ordenado.get(i));
+            swapsMade[0]++;
+        }
+    }
+    
     public static void main(String[] args) {
         long startTime = System.nanoTime();
         List<Personagem> lista = new ArrayList<Personagem>();
@@ -360,6 +413,7 @@ public class TP02Q05 {
         Integer[] comparisons = {0};
         Integer[] swapsMade = {0};
 
+        nameSort(input, comparisons, swapsMade);
         sort(input, comparisons, swapsMade);
 
         for (Personagem personagem : input) {
@@ -370,7 +424,7 @@ public class TP02Q05 {
         long endTime = System.nanoTime();
         long executionTime = (endTime - startTime) / 1000000;
 
-        Arq.openWrite("log");
+        Arq.openWrite("827761_countingsort.txt");
         Arq.println("827761\t" + comparisons[0] + "\t" + swapsMade[0] + "\t" + executionTime + "ms");
         Arq.close();
     }

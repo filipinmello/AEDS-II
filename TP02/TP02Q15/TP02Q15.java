@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Date;
 
-public class TP02Q05 {
+public class TP02Q15 {
         static class Personagem implements Cloneable{
             private String id;
             private String name;
@@ -129,7 +129,7 @@ public class TP02Q05 {
             }
 
             @Override
-            public Object clonar() throws CloneNotSupportedException {
+            public Object clone() throws CloneNotSupportedException {
                 Personagem clonedPersonagem = (Personagem) super.clone();
         
                 clonedPersonagem.alternateNames = new ArrayList<>(this.alternateNames);
@@ -362,15 +362,15 @@ public class TP02Q05 {
 
         sort(input, comparisons, swapsMade);
 
-        for (Personagem personagem : input) {
-            personagem.imprimir();
+        for (int i=0; i<10; i++) {
+            input.get(i).imprimir();
         }
 
         entrada.close();
         long endTime = System.nanoTime();
         long executionTime = (endTime - startTime) / 1000000;
 
-        Arq.openWrite("log");
+        Arq.openWrite("827761_selecaoParcial.txt");
         Arq.println("827761\t" + comparisons[0] + "\t" + swapsMade[0] + "\t" + executionTime + "ms");
         Arq.close();
     }

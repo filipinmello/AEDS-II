@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define MAX_NAME_LENGTH 500
 #define MAX_ALTERNATE_NAMES 150
@@ -194,43 +195,128 @@ bool compareStrings(char* str1, char* str2){
     return true;
 }
 
+void swap(Personagem *inputPersonagens, int i, int j) {
+    Personagem temp = inputPersonagens[i];
+    inputPersonagens[i] = inputPersonagens[j];
+    inputPersonagens[j] = temp;
+}
+
+int getMax(Personagem *inputPersonagens, int n) {
+    int maxLen = strlen(inputPersonagens[0].id);
+
+    for (int i = 1; i < n; i++) {
+        int len = strlen(inputPersonagens[i].id);
+        if (len > maxLen) {
+            maxLen = len;
+        }
+    }
+    return maxLen;
+}
+
+void radcountingSort(Personagem *inputPersonagens, int n, int pos) {
+    const int range = 256;
+
+    int count[range];
+    Personagem output[n];
+
+    for (int i = 0; i < range; i++) {
+        count[i] = 0;
+    }
+
+    for (int i = 0; i < n; i++) {
+        count[inputPersonagens[i].id[pos]]++;
+    }
+
+    for (int i = 1; i < range; i++) {
+        count[i] += count[i - 1];
+    }
+
+    for (int i = n - 1; i >= 0; i--) {
+        output[count[inputPersonagens[i].id[pos]] - 1] = inputPersonagens[i];
+        count[inputPersonagens[i].id[pos]]--;
+    }
+
+    for (int i = 0; i < n; i++) {
+        inputPersonagens[i] = output[i];
+    }
+}
+
+void sort(Personagem *inputPersonagens, int n) {
+    int maxLen = getMax(inputPersonagens, n);
+    for (int i = maxLen - 1; i >= 0; i--) {
+        radcountingSort(inputPersonagens, n, i);
+    }
+}
+
 int main(){
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     char *tokens[MAX_TOKENS];
-    const char *fileName = "characters.csv";
+    const char *fileName = "/tmp/characters.csv";
     Personagem *personagens;
     personagens = (Personagem *)malloc(405 * sizeof(Personagem));
+    int comparisons = 0;
 
-    FILE *file = fopen(fileName, "r");
+    FILE *file = fopen(fileName, "r"); //Abertura do arquivo csv
     if (file == NULL) {
         printf("Error opening file %s\n", fileName);
     }
 
     char line[1024];
     int i = 0;
-    while (fscanf(file, "%[^\n]%*c", line) != EOF) {
-        if(i>0){
+    while (fscanf(file, "%[^\n]%*c", line) != EOF) { //Leitura do arquivo csv até o final
+        if(i>0){ // pular primeira linha
             parseString(line, tokens);
             personagens[i] = createPersonagem(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4], tokens[5], tokens[6], tokens[7], tokens[8], tokens[9], tokens[10], 
                                             tokens[11], tokens[12], tokens[13], tokens[14], tokens[15], tokens[16], tokens[17]);
-            //imprimir(personagens[i]);
         }
         i++;
     }
     fclose(file);
     
     char input[100];
+    char inputArray[405][301];//array para armazenar os IDs de entrada
+    int inputCount = 0;
+
     scanf("%s", input);
 
-    while(strcmp(input, "FIM") != 0){
-        for(int i = 1;i<405;i++){
-            // printf("personagem %s\n", personagens[i].id);
-            // printf("input %s\n", input);
-            if(strcmp(personagens[i].id,input) == 0){
-                imprimir(personagens[i]);
+    do{ //leitura dos IDs de entrada ate encontrar "FIM"
+        strcpy(inputArray[inputCount], input);
+        inputCount++;
+        scanf("%s", input);
+    } while(strcmp(input, "FIM") != 0);
+
+    Personagem *inputPersonagens; //Array para armazenar os personagens presentes no inputArray
+    inputPersonagens = (Personagem *)malloc(inputCount * sizeof(Personagem));
+
+    for(int i = 0; i < inputCount; i++) {
+        for(int j = 1;j<405;j++){
+            if(strcmp(personagens[j].id, inputArray[i]) == 0) {
+                inputPersonagens[i] = personagens[j]; //Populando p inputPersonagens
             }
         }
-        scanf("%s", input);
     }
+
+    sort(inputPersonagens, inputCount); //Metodo para ordenar o inputPersonagens por ordem alfabetica(house)
+
+    for(int i = 0; i < inputCount; i++){
+        imprimir(inputPersonagens[i]);
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    long long startTime = start.tv_sec * 1000000000 + start.tv_nsec;
+    long long endTime = end.tv_sec * 1000000000 + end.tv_nsec;
+    long long executionTime = (endTime - startTime) / 1000000;
+
+    FILE *fileLog = fopen("matricula_binaria.txt", "w");
+    if (fileLog == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return 1;
+    }
+
+    fprintf(fileLog, "827761\t%lldms\t%d\n", executionTime, comparisons);
+    fclose(fileLog);
 
     return 0;
 }

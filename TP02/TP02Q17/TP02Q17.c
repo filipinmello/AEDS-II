@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define MAX_NAME_LENGTH 500
 #define MAX_ALTERNATE_NAMES 150
@@ -194,43 +195,135 @@ bool compareStrings(char* str1, char* str2){
     return true;
 }
 
+void swap(Personagem *inputPersonagens, int i, int j) {
+    Personagem temp = inputPersonagens[i];
+    inputPersonagens[i] = inputPersonagens[j];
+    inputPersonagens[j] = temp;
+}
+
+int compareHairColour(Personagem p1, Personagem p2){
+        int comparacao = strcmp(p1.hairColour, p2.hairColour);
+		if(comparacao == 0){
+			return strcmp(p1.name, p2.name);
+		}
+		return comparacao;
+}
+
+void construir(Personagem *inputPersonagens, int tamHeap) {
+    for(int i = tamHeap; i > 1 && compareHairColour(inputPersonagens[i], inputPersonagens[i/2]) > 0; i /= 2) {
+        swap(inputPersonagens, i, i/2);
+    }
+}
+
+int getMaiorFilho(Personagem *inputPersonagens, int i, int tamHeap) {
+    int filho;
+    if (2*i == tamHeap || compareHairColour(inputPersonagens[2*i], inputPersonagens[2*i+1]) > 0) {
+        filho = 2*i;
+    } else {
+        filho = 2*i + 1;
+    }
+    return filho;
+}
+
+void reconstruir(Personagem *inputPersonagens, int tamHeap) {
+    int i = 1;
+    while(i <= (tamHeap/2)) {
+        int filho = getMaiorFilho(inputPersonagens, i, tamHeap);
+        if(compareHairColour(inputPersonagens[i], inputPersonagens[filho]) < 0) {
+            swap(inputPersonagens, i, filho);
+            i = filho;
+        } else {
+            i = tamHeap;
+        }
+    }
+}
+
+void sort(Personagem *inputPersonagens, int n) {
+    Personagem arrayTmp[n+1];
+    memcpy(arrayTmp + 1, inputPersonagens, n * sizeof(Personagem));
+
+    for(int tamHeap = 2; tamHeap <= n; tamHeap++) {
+        construir(arrayTmp, tamHeap);
+    }
+
+    int tamHeap = n;
+    while(tamHeap > 1) {
+        swap(arrayTmp, 1, tamHeap--);
+        reconstruir(arrayTmp, tamHeap);
+    }
+
+    memcpy(inputPersonagens, arrayTmp + 1, n * sizeof(Personagem));
+}
+
 int main(){
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     char *tokens[MAX_TOKENS];
-    const char *fileName = "characters.csv";
+    const char *fileName = "/tmp/characters.csv";
     Personagem *personagens;
     personagens = (Personagem *)malloc(405 * sizeof(Personagem));
+    int comparisons = 0;
 
-    FILE *file = fopen(fileName, "r");
+    FILE *file = fopen(fileName, "r"); //Abertura do arquivo csv
     if (file == NULL) {
         printf("Error opening file %s\n", fileName);
     }
 
     char line[1024];
     int i = 0;
-    while (fscanf(file, "%[^\n]%*c", line) != EOF) {
-        if(i>0){
+    while (fscanf(file, "%[^\n]%*c", line) != EOF) { //Leitura do arquivo csv até o final
+        if(i>0){ // pular primeira linha
             parseString(line, tokens);
             personagens[i] = createPersonagem(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4], tokens[5], tokens[6], tokens[7], tokens[8], tokens[9], tokens[10], 
                                             tokens[11], tokens[12], tokens[13], tokens[14], tokens[15], tokens[16], tokens[17]);
-            //imprimir(personagens[i]);
         }
         i++;
     }
     fclose(file);
     
     char input[100];
+    char inputArray[405][301];//array para armazenar os IDs de entrada
+    int inputCount = 0;
+
     scanf("%s", input);
 
-    while(strcmp(input, "FIM") != 0){
-        for(int i = 1;i<405;i++){
-            // printf("personagem %s\n", personagens[i].id);
-            // printf("input %s\n", input);
-            if(strcmp(personagens[i].id,input) == 0){
-                imprimir(personagens[i]);
+    do{ //leitura dos IDs de entrada ate encontrar "FIM"
+        strcpy(inputArray[inputCount], input);
+        inputCount++;
+        scanf("%s", input);
+    } while(strcmp(input, "FIM") != 0);
+
+    Personagem *inputPersonagens; //Array para armazenar os personagens presentes no inputArray
+    inputPersonagens = (Personagem *)malloc(inputCount * sizeof(Personagem));
+
+    for(int i = 0; i < inputCount; i++) {
+        for(int j = 1;j<405;j++){
+            if(strcmp(personagens[j].id, inputArray[i]) == 0) {
+                inputPersonagens[i] = personagens[j]; //Populando p inputPersonagens
             }
         }
-        scanf("%s", input);
     }
+
+    sort(inputPersonagens, inputCount); //Metodo para ordenar o inputPersonagens por ordem alfabetica(house)
+
+    for(int i = 0; i < 10; i++){
+        imprimir(inputPersonagens[i]);
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    long long startTime = start.tv_sec * 1000000000 + start.tv_nsec;
+    long long endTime = end.tv_sec * 1000000000 + end.tv_nsec;
+    long long executionTime = (endTime - startTime) / 1000000;
+
+    FILE *fileLog = fopen("matricula_binaria.txt", "w");
+    if (fileLog == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return 1;
+    }
+
+    fprintf(fileLog, "827761\t%lldms\t%d\n", executionTime, comparisons);
+    fclose(fileLog);
 
     return 0;
 }

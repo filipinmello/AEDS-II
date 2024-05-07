@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Date;
 
-public class TP02Q05 {
+public class TP02Q18 {
         static class Personagem implements Cloneable{
             private String id;
             private String name;
@@ -129,7 +129,7 @@ public class TP02Q05 {
             }
 
             @Override
-            public Object clonar() throws CloneNotSupportedException {
+            public Object clone() throws CloneNotSupportedException {
                 Personagem clonedPersonagem = (Personagem) super.clone();
         
                 clonedPersonagem.alternateNames = new ArrayList<>(this.alternateNames);
@@ -298,22 +298,33 @@ public class TP02Q05 {
         return values;
     }
 
-    public static void sort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade) {
-		for (int i = 0; i < (input.size() - 1); i++) {
-			int menor = i;
-			for (int j = (i + 1); j < input.size(); j++){
-				if (input.get(j).getName().compareTo(input.get(menor).getName()) < 0){
-					menor = j;
-                    comparisons[0]++;
-				}
-                comparisons[0]++;
-			}
-			if (menor != i) {
-                swap(input, menor, i);
-                swapsMade[0]+=3;
-            }
+    public static int compareHouse(Personagem p1, Personagem p2){
+        int comparacao = p1.getHouse().compareTo(p2.getHouse());
+		if(comparacao == 0){
+			return p1.getName().compareTo(p2.getName());
 		}
+		return comparacao;
+    }
+
+    public static void sort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade) {
+        quicksort(input, 0, input.size()-1);
 	}
+
+    private static void quicksort(ArrayList<Personagem> input, int esq, int dir) {
+        int i = esq, j = dir;
+        Personagem pivo = input.get((dir+esq)/2);
+        while (i <= j) {
+            while (compareHouse(input.get(i), pivo) < 0) i++;
+            while (compareHouse(input.get(j), pivo) > 0) j--;
+            if (i <= j) {
+                swap(input, i, j);
+                i++;
+                j--;
+            }
+        }
+        if(esq < j)  quicksort(input, esq, j);
+        if(i < dir)  quicksort(input, i, dir);
+    }
 
     public static void swap(ArrayList<Personagem> input, int i, int j) {
         Personagem temp1 = input.get(i);
@@ -362,15 +373,15 @@ public class TP02Q05 {
 
         sort(input, comparisons, swapsMade);
 
-        for (Personagem personagem : input) {
-            personagem.imprimir();
+        for (int i=0; i<10; i++) {
+            input.get(i).imprimir();
         }
 
         entrada.close();
         long endTime = System.nanoTime();
         long executionTime = (endTime - startTime) / 1000000;
 
-        Arq.openWrite("log");
+        Arq.openWrite("827761_selecaoParcial.txt");
         Arq.println("827761\t" + comparisons[0] + "\t" + swapsMade[0] + "\t" + executionTime + "ms");
         Arq.close();
     }

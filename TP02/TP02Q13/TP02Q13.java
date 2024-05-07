@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Date;
 
-public class TP02Q05 {
+public class TP02Q13 {
         static class Personagem implements Cloneable{
             private String id;
             private String name;
@@ -129,7 +129,7 @@ public class TP02Q05 {
             }
 
             @Override
-            public Object clonar() throws CloneNotSupportedException {
+            public Object clone() throws CloneNotSupportedException {
                 Personagem clonedPersonagem = (Personagem) super.clone();
         
                 clonedPersonagem.alternateNames = new ArrayList<>(this.alternateNames);
@@ -297,24 +297,7 @@ public class TP02Q05 {
         }
         return values;
     }
-
-    public static void sort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade) {
-		for (int i = 0; i < (input.size() - 1); i++) {
-			int menor = i;
-			for (int j = (i + 1); j < input.size(); j++){
-				if (input.get(j).getName().compareTo(input.get(menor).getName()) < 0){
-					menor = j;
-                    comparisons[0]++;
-				}
-                comparisons[0]++;
-			}
-			if (menor != i) {
-                swap(input, menor, i);
-                swapsMade[0]+=3;
-            }
-		}
-	}
-
+    
     public static void swap(ArrayList<Personagem> input, int i, int j) {
         Personagem temp1 = input.get(i);
         Personagem temp2 = input.get(j);
@@ -323,10 +306,66 @@ public class TP02Q05 {
         input.set(j, temp1);
     }
 
+    public static int compareActorName(Personagem p1, Personagem p2) {
+        String actorName1 = p1.getActorName();
+        String actorName2 = p2.getActorName();
+    
+        if (actorName1 == null && actorName2 == null) {
+            return 0;
+        } else if (actorName1 == null) {
+            return -1;
+        } else if (actorName2 == null) {
+            return 1;
+        }
+    
+        int comparacao = actorName1.compareTo(actorName2);
+        if (comparacao == 0) {
+            return p1.getName().compareTo(p2.getName());
+        }
+        return comparacao;
+    }
+
+    public static void sort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade) {
+        mergesort(input, 0, input.size() - 1);
+    }
+    
+    private static void mergesort(ArrayList<Personagem> input, int esq, int dir) {
+        if (esq < dir) {
+            int meio = (esq + dir) / 2;
+            mergesort(input, esq, meio);
+            mergesort(input, meio + 1, dir);
+            intercalar(input, esq, meio, dir);
+        }
+    }
+    
+    public static void intercalar(ArrayList<Personagem> input, int esq, int meio, int dir) {
+        int n1, n2, i, j, k;
+    
+        n1 = meio - esq + 1;
+        n2 = dir - meio;
+    
+        Personagem[] a1 = new Personagem[n1 + 1];
+        Personagem[] a2 = new Personagem[n2 + 1];
+    
+        for (i = 0; i < n1; i++) {
+            a1[i] = input.get(esq + i);
+        }
+    
+        for (j = 0; j < n2; j++) {
+            a2[j] = input.get(meio + j + 1);
+        }
+    
+        a1[i] = a2[j] = new Personagem();
+    
+        for (i = j = 0, k = esq; k <= dir; k++) {
+            input.set(k, (compareActorName(a1[i], a2[j]) <= 0) ? a1[i++] : a2[j++]);
+        }
+    }
+    
     public static void main(String[] args) {
         long startTime = System.nanoTime();
         List<Personagem> lista = new ArrayList<Personagem>();
-        String fileName = "/tmp/characters.csv";
+        String fileName = "characters.csv";
         String fileLine = "";
         ArrayList<Personagem> input = new ArrayList<>();
         String line;
@@ -370,7 +409,7 @@ public class TP02Q05 {
         long endTime = System.nanoTime();
         long executionTime = (endTime - startTime) / 1000000;
 
-        Arq.openWrite("log");
+        Arq.openWrite("827761_heapsort.txt");
         Arq.println("827761\t" + comparisons[0] + "\t" + swapsMade[0] + "\t" + executionTime + "ms");
         Arq.close();
     }

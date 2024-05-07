@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Date;
 
-public class TP02Q05 {
+public class TP02Q07 {
         static class Personagem implements Cloneable{
             private String id;
             private String name;
@@ -129,7 +129,7 @@ public class TP02Q05 {
             }
 
             @Override
-            public Object clonar() throws CloneNotSupportedException {
+            public Object clone() throws CloneNotSupportedException {
                 Personagem clonedPersonagem = (Personagem) super.clone();
         
                 clonedPersonagem.alternateNames = new ArrayList<>(this.alternateNames);
@@ -298,20 +298,27 @@ public class TP02Q05 {
         return values;
     }
 
+    public static int compareDateOfBirth(Personagem p1, Personagem p2){
+        int comparacao = p1.getDateOfBirth().compareTo(p2.getDateOfBirth());
+		if(comparacao == 0){
+			return p1.getName().compareTo(p2.getName());
+		}
+		return comparacao;
+    }
+
     public static void sort(ArrayList<Personagem> input, Integer[] comparisons, Integer[] swapsMade) {
-		for (int i = 0; i < (input.size() - 1); i++) {
-			int menor = i;
-			for (int j = (i + 1); j < input.size(); j++){
-				if (input.get(j).getName().compareTo(input.get(menor).getName()) < 0){
-					menor = j;
-                    comparisons[0]++;
-				}
+        for (int i = 0; i < (input.size()); i++) {
+			Personagem tmp = input.get(i);
+            int j = i-1;
+
+            while((j>=0) && (compareDateOfBirth(input.get(j), tmp)) > 0){
+                input.set(j+1, input.get(j));
+                swapsMade[0]++;
+                j--;
                 comparisons[0]++;
-			}
-			if (menor != i) {
-                swap(input, menor, i);
-                swapsMade[0]+=3;
-            }
+            } comparisons[0]++;
+            input.set(j+1, tmp);
+            swapsMade[0]++;
 		}
 	}
 
@@ -370,7 +377,7 @@ public class TP02Q05 {
         long endTime = System.nanoTime();
         long executionTime = (endTime - startTime) / 1000000;
 
-        Arq.openWrite("log");
+        Arq.openWrite("matricula_insercao.txt");
         Arq.println("827761\t" + comparisons[0] + "\t" + swapsMade[0] + "\t" + executionTime + "ms");
         Arq.close();
     }
