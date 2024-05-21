@@ -66,7 +66,7 @@ void mostrar(){
     printf("]\n");
 }
 
-strtokSingle (char * str, char const * delims){
+char* strtokSingle (char * str, char const * delims){
   static char  * src = NULL;
   char  *  p,  * ret = 0;
 
@@ -98,9 +98,17 @@ int main(){
     mostrar();
     inserir("felipe", 0);
     mostrar();
+    inserir("paulo", 1);
+    mostrar();
+    inserir("jaime", n);
+    mostrar();
     printf("\n-------------------------\nfim insercao\n-------------------------\n");
 
-    printf("Elemento removido: %s\n", remover(1));
+    printf("Elemento removido: %s\n", remover(n/2));
+    mostrar();
+    printf("Elemento removido: %s\n", remover(0));
+    mostrar();
+    printf("Elemento removido: %s\n", remover(n));
     mostrar();
 
     return 0;
